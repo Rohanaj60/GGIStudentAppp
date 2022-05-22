@@ -13,9 +13,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
     EditText LoginEmail;
@@ -24,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     Button btnLogin1;
 
     FirebaseAuth mAuth;
+    FirebaseFirestore fstore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         btnLogin1 = findViewById(R.id.login);
 
         mAuth = FirebaseAuth.getInstance();
+        fstore = FirebaseFirestore.getInstance();
 
         btnLogin1.setOnClickListener(view -> {
             loginUser();
@@ -93,13 +99,34 @@ public class MainActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()){
                        /* Toast.makeText(MainActivity.this, "User logged in successfully", Toast.LENGTH_SHORT).show();*/
-                        Intent signuppage = new Intent(MainActivity.this,Home.class);
-                        startActivity(signuppage);
+                       checkAdmin(task.getResult().getUser().getUid());
+//                        Intent signuppage = new Intent(MainActivity.this,Home.class);
+//                        startActivity(signuppage);
                     }else{
                         Toast.makeText(MainActivity.this, "Log in Error: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
             });
         }
+    }
+
+    private void checkAdmin(String uid) {
+
+        DocumentReference df = fstore.collection("Users").document(uid);
+        df.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+//                Log.d("TAG", "onSuccess: "+documentSnapshot.getData());
+
+                if(documentSnapshot.getString("isAdmin").equals("true")){
+                    startActivity(new Intent(MainActivity.this,AdminPanelTest.class));
+                    finish();
+                }
+                if(documentSnapshot.getString("isAdmin").equals("false")){
+                    startActivity(new Intent(MainActivity.this,Home.class));
+                    finish();
+                }
+            }
+        });
     }
 }

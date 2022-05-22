@@ -10,6 +10,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GGIStudentApp">
+        <activity android:name=".AdminPanelTest"></activity>
         <activity
             android:name=".YourQuestions"
             android:exported="false"

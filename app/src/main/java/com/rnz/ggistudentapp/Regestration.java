@@ -15,6 +15,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Regestration extends AppCompatActivity {
 
@@ -24,6 +30,7 @@ public class Regestration extends AppCompatActivity {
     Button btnRegister;
 
     FirebaseAuth mAuth;
+    FirebaseFirestore fstore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +42,7 @@ public class Regestration extends AppCompatActivity {
         tvLoginHere = findViewById(R.id.tvLoginHere);
         btnRegister = findViewById(R.id.register);
         mAuth = FirebaseAuth.getInstance();
-
+fstore = FirebaseFirestore.getInstance();
         btnRegister.setOnClickListener(view ->{
             createUser();
         });
@@ -61,6 +68,14 @@ public class Regestration extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()){
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        DocumentReference df = fstore.collection("Users").document(user.getUid());
+                        Map<String,Object> datamap = new HashMap<>();
+                        datamap.put("Email",regEmail.getText().toString());
+                        datamap.put("Password",regPassword.getText().toString());
+                        datamap.put("isAdmin","false");
+
+                        df.set(datamap);
                         Toast.makeText(Regestration.this, "User registered successfully", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(Regestration.this, MainActivity.class));
                     }else{
